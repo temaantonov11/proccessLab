@@ -10,7 +10,7 @@
 void receiveMessage(int client_socket) {
     char buffer[256];
     while (true) {
-        int len = read(client_socket, buffer, sizeof(buffer) - 1);
+        int len = recv(client_socket, buffer, sizeof(buffer) - 1,0);
         if (len <= 0) {
             perror("read");
             close(client_socket);
@@ -28,7 +28,7 @@ int main() {
     // Создаем сокет
     int client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket == -1) {
-        std::cout << "socket error";
+        perror("socket error");
         exit(EXIT_FAILURE);
     }
 
