@@ -52,21 +52,21 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    std::cout << "Welcome to the chat!";
+    std::cout << "Welcome to the chat!\n";
     std::string name;
     std::cout << "Enter your name: ";
     std::cin >> name;
 
     send(client_socket,name.c_str(),name.size(),0);
 
-    // Поток для получения сообщений
+    
     std::thread(receiveMessage,client_socket).detach();
 
     std::string my_message;
-    std::cout << "For exit write: enter" << '\n';
+    std::cout << "For exit write: exit" << '\n';
     std::cout << "Enter message using format: @username: adress" << '\n';
 
-    // Цикл отправки сообщений
+    
     while (true) {
         std::cin >> my_message;
         if (my_message == "exit") {
