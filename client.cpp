@@ -63,8 +63,8 @@ int main() {
     std::thread(receiveMessage,client_socket).detach();
 
     std::string my_message;
-    std::cout << "For exit write: enter";
-    std::cout << "Enter message using format: @username: adress";
+    std::cout << "For exit write: enter" << '\n';
+    std::cout << "Enter message using format: @username: adress" << '\n';
 
     // Цикл отправки сообщений
     while (true) {
