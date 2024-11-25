@@ -7,6 +7,26 @@
 #include <string.h>
 #include <cstring>
 #include <arpa/inet.h>
+#include <thread>
+
+void handle_client_request(int sock) {
+    char buffer[256];
+    while (1) {
+        ssize_t bytes_read = read(sock, buffer, sizeof(buffer) - 1);
+        if (bytes_read == -1) {
+            perror("read");
+            exit(EXIT_FAILURE);
+        }
+        if (strcmp(buffer, "ping") == 0){
+            char message[256] = "pong";
+            if (write(sock, message, strlen(message)) == -1){
+                perror("write");
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+}
+
 
 int main()
 {
@@ -34,7 +54,7 @@ int main()
     listen(connection_socket, 1);
 
     int sock;
-    char buffer[256];
+    
     while (1) {
         sock = accept(connection_socket, NULL, NULL);
         if (sock < 0) {
@@ -42,20 +62,8 @@ int main()
             exit(EXIT_FAILURE);
         }
 
-        while (1) {
-            ssize_t bytes_read = read(sock, buffer, sizeof(buffer) - 1);
-            if (bytes_read == -1) {
-                perror("read");
-                exit(EXIT_FAILURE);
-            }
-            if (strcmp(buffer, "ping") == 0){
-                char message[256] = "pong";
-                if (write(sock, message, strlen(message)) == -1){
-                    perror("write");
-                    exit(EXIT_FAILURE);
-                }
-            }
-        }
+        std::thread client_thread(handle_client_request, sock);
+        client_thread.join();
         close(sock);
     }
     
