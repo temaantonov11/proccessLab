@@ -3,19 +3,36 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <cstring>
+#include <thread>
 #include <arpa/inet.h>
 #include "information.h"
 
+void receiveMessage(int client_socket) {
+    char buffer[256];
+    while (true) {
+        int len = read(client_socket, buffer, sizeof(buffer) - 1);
+        if (len <= 0) {
+            perror("read");
+            close(client_socket);
+            exit(EXIT_FAILURE);
+        }
+        buffer[len] = '\0';
+        std::cout << buffer << std::endl;
+    }
+
+
+}
 
 int main() {
+
     // Создаем сокет
-    int client_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (client_fd == -1) {
+    int client_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (client_socket == -1) {
         std::cout << "socket error";
         exit(EXIT_FAILURE);
     }
 
-    // Настроим адрес сервера
+    // Настройка адресса сервера
     struct sockaddr_in serverAddr;
     memset(&serverAddr, 0, sizeof(serverAddr));  // Обнуляем структуру
     serverAddr.sin_family = AF_INET;  // Используем IPv4
@@ -23,37 +40,41 @@ int main() {
 
     // Преобразуем строковый IP в формат числового адреса
     if (inet_pton(AF_INET, SERVER_IP, &serverAddr.sin_addr) <= 0) {
-        std::cout << "Error with inet_pton";
-        close(client_fd);
+        perror("inet_pton");
+        close(client_socket);
         exit(EXIT_FAILURE);
     }
 
     // Подключаемся к серверу
-    if (connect(client_fd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1) {
-        std::cout << "Error with connection";
-        close(client_fd);
+    if (connect(client_socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1) {
+        perror("connection");
+        close(client_socket);
         exit(EXIT_FAILURE);
     }
 
-    const char* message = "ping";
-    if (write(client_fd, message, strlen(message)) == -1) {
-        std::cout << "Error write response";
-        close(client_fd);
-        exit(EXIT_FAILURE);
+    std::cout << "Welcome to the chat!";
+    std::string name;
+    std::cout << "Enter your name: ";
+    std::cin >> name;
+
+    send(client_socket,name.c_str(),name.size(),0);
+
+    // Поток для получения сообщений
+    std::thread(receiveMessage,client_socket).detach();
+
+    std::string my_message;
+    std::cout << "For exit write: enter";
+    std::cout << "Enter message using format: @username: adress";
+
+    // Цикл отправки сообщений
+    while (true) {
+        std::cin >> my_message;
+        if (my_message == "exit") {
+            break;
+        }
+        send(client_socket,my_message.c_str(),my_message.size(),0);
     }
+   
 
-    // Чтение ответа от сервера
-    char buffer[256];
-    ssize_t len = read(client_fd, buffer, sizeof(buffer) - 1);
-    if (len == -1) {
-        std::cout << "Error read";
-        close(client_fd);
-        exit(EXIT_FAILURE);
-    }
-    buffer[len] = '\0';  // Завершаем строку
-
-    std::cout << "Server response: " << buffer << std::endl;
-
-    close(client_fd);
     return 0;
 } 
