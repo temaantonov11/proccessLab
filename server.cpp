@@ -4,7 +4,6 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <string.h>
 #include <cstring>
 #include <arpa/inet.h>
 #include <thread>
@@ -50,7 +49,7 @@ void handle_client_request(int current_client_socket) {
     std::string other_name;
     std::string message;
 
-    int byte_read = read(current_client_socket, buffer, sizeof(buffer) - 1);
+    int byte_read = recv(current_client_socket, buffer, 1024, 0);
     if (byte_read <= 0) {
         perror("read name");
         close(current_client_socket);
