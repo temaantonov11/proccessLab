@@ -18,6 +18,7 @@ void receiveMessage(int client_socket) {
         }
         buffer[len] = '\0';
         std::cout << buffer << std::endl;
+        
     }
 
 
@@ -57,8 +58,12 @@ int main() {
     std::cout << "Enter your name: ";
     std::cin >> name;
 
-    send(client_socket,name.c_str(),name.size(),0);
-
+    if (send(client_socket,name.c_str(),name.size(),0) == -1) {
+        perror("send name");
+        exit(EXIT_FAILURE);
+    }
+    
+    
     
     std::thread(receiveMessage,client_socket).detach();
 
@@ -72,9 +77,11 @@ int main() {
         if (my_message == "exit") {
             break;
         }
-        send(client_socket,my_message.c_str(),my_message.size(),0);
+        if (send(client_socket,my_message.c_str(),my_message.size(),0) == -1){
+            perror("send message");
+            exit(EXIT_FAILURE);
+        };
     }
    
-
     return 0;
 } 

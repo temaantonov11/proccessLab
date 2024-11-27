@@ -62,7 +62,9 @@ void handle_client_request(int current_client_socket) {
     
     {
         std::lock_guard<std::mutex> lock(clients_mutex);
-        clients[name] = current_client_socket;
+        
+        clients[name] = current_client_socket; 
+         
     }
 
     std::cout << "Client connected: " << name << " (" << current_client_socket << ")" << std::endl;
@@ -108,7 +110,10 @@ void handle_client_request(int current_client_socket) {
 
         if (other_socket != -1) {
             // Отправляем сообщение адресату
-            send(other_socket, to_send.c_str(), to_send.size(), 0);
+            if (send(other_socket, to_send.c_str(), to_send.size(), 0) == -1) {
+                perror("send message");
+                exit(EXIT_FAILURE);
+            }
 
             // Сохраняем сообщение в историю адресата
             log_message(other_name, "Received from " + name, message);
